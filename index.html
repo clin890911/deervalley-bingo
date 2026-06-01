@@ -547,6 +547,44 @@ rt{font-family:var(--font);font-weight:600;font-size:.5em;color:var(--sage);line
 .bubble rt{color:var(--sage)}
 .iconbtn.dim{opacity:.42}
 #zhuyinBtn{font-family:var(--font);font-weight:900}
+
+/* ===== v1.1：勝利圖樣目標 / 道具救援卡 / 聲音題 / 強化視覺 ===== */
+.goal-banner{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 auto 4px;padding:5px 14px;background:rgba(255,255,255,.85);border:2px solid var(--moss);border-radius:999px;font-weight:900;color:var(--ink);width:max-content;max-width:94vw;box-shadow:0 4px 14px rgba(58,38,23,.1)}
+.goal-banner .gb-label{color:var(--green-d);font-size:.9rem}
+.goal-banner .gb-name{font-size:1.04rem}
+.goal-banner svg.mini{width:32px;height:32px;flex:0 0 auto}
+.mini rect.c{fill:#fff;stroke:#cdbb97;stroke-width:1.4}
+.mini rect.on{fill:var(--terra)}
+.mini rect.free{fill:var(--moss)}
+.pu-title{width:100%;text-align:center;font-weight:900;color:var(--green-d);font-size:.84rem;margin:2px 0}
+.pu-bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:8px auto 0;max-width:780px}
+.pu-btn{display:flex;flex-direction:column;align-items:center;gap:1px;border:none;border-radius:14px;padding:7px 14px;min-width:90px;cursor:pointer;font-weight:900;color:#fff;background:var(--wood);box-shadow:0 4px 0 rgba(0,0,0,.14);transition:transform .08s}
+.pu-btn .pu-ic{font-size:1.35rem;line-height:1}
+.pu-btn .pu-nm{font-size:.8rem;white-space:nowrap}
+.pu-btn .pu-ct{font-size:.7rem;opacity:.95}
+.pu-btn.p5050{background:#5E8B86}.pu-btn.phint{background:#C79A4E}.pu-btn.pdbl{background:#D07A3C}.pu-btn.predraw{background:#6F9A3F}
+.pu-btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.14)}
+.pu-btn:disabled{opacity:.42;cursor:not-allowed;box-shadow:none;filter:grayscale(.5)}
+.pu-picker{display:none;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin:8px auto 0;max-width:780px}
+.pu-picker.show{display:flex}
+.pu-picker .pp-label{width:100%;text-align:center;font-weight:900;color:var(--ink)}
+.pp-team{border:none;border-radius:12px;padding:8px 16px;color:#fff;font-weight:900;cursor:pointer;background:var(--tc,#888);box-shadow:0 3px 0 rgba(0,0,0,.14)}
+.pp-team:disabled{opacity:.34;cursor:not-allowed}
+.pp-cancel{border:2px solid var(--line);background:#fff;border-radius:12px;padding:8px 14px;font-weight:900;cursor:pointer}
+.pu-hint{display:none;margin:8px auto 0;max-width:680px;padding:8px 14px;background:#FFF6E4;border:2px dashed var(--wood);border-radius:14px;font-weight:800;color:#7a5a2a;text-align:center}
+.pu-hint.show{display:block}
+.dbl-badge{display:inline-flex;align-items:center;gap:4px;background:var(--terra);color:#fff;border-radius:999px;padding:2px 10px;font-weight:900;font-size:.8rem;margin-left:6px;animation:pulseDbl 1s infinite}
+@keyframes pulseDbl{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.ans.pu-hide{opacity:.16;pointer-events:none;filter:grayscale(1)}
+.team-chip .tp{display:inline-block;margin-left:5px;font-size:.74rem;opacity:.95}
+.sound-media{display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px}
+.sound-play{width:120px;height:120px;border-radius:50%;border:none;cursor:pointer;background:radial-gradient(circle at 50% 36%,#7FB2AC,#4E7E78);color:#fff;font-size:2.9rem;box-shadow:0 8px 0 rgba(0,0,0,.16),0 10px 24px rgba(78,126,120,.4);transition:transform .1s}
+.sound-play:active{transform:translateY(3px)}
+.sound-play.playing{animation:sndPulse .6s ease-in-out infinite}
+@keyframes sndPulse{0%,100%{box-shadow:0 8px 0 rgba(0,0,0,.16),0 0 0 0 rgba(94,139,134,.5)}50%{box-shadow:0 8px 0 rgba(0,0,0,.16),0 0 0 18px rgba(94,139,134,0)}}
+.sound-cap{font-weight:900;color:var(--green-d)}
+.sound-empty{color:#b06a4a;font-weight:800;background:#fff3ef;border:2px dashed #e0a48c;border-radius:12px;padding:10px 16px;text-align:center}
+.streak-flair.mega{font-size:clamp(1.5rem,4.4vw,2.6rem)}
 </style>
 </head>
 <body>
@@ -611,6 +649,7 @@ rt{font-family:var(--font);font-weight:600;font-size:.5em;color:var(--sage);line
       <button class="hud-chip board-chip" onclick="showRank()" title="隊伍排名">🏆 排名</button>
     </div>
     <div class="scoreboard" id="scoreboard"></div>
+    <div class="goal-banner" id="goalBanner"></div>
 
     <div class="play">
       <!-- A) 出題 -->
@@ -621,8 +660,11 @@ rt{font-family:var(--font);font-weight:600;font-size:.5em;color:var(--sage);line
           <h2 class="qtext" id="qText"></h2>
           <div class="answers" id="opts"></div>
           <div class="team-award" id="teamAward"></div>
+          <div class="pu-hint" id="puHint"></div>
         </div>
         <div class="actionbar" id="qActions"></div>
+        <div class="pu-bar" id="puBar"></div>
+        <div class="pu-picker" id="puPicker"></div>
       </div>
       <!-- B) 答對獎勵轉盤 -->
       <div class="pstate" id="ps-wheel">
@@ -759,6 +801,7 @@ rt{font-family:var(--font);font-weight:600;font-size:.5em;color:var(--sage);line
 </div>
 
 <input type="file" id="stageImgInput" accept="image/*" style="display:none">
+<audio id="qAudio" preload="auto"></audio>
 <canvas id="fx"></canvas>
 <div id="cele" class="cele"></div>
 <div id="streakFlair" class="streak-flair"></div>
@@ -956,7 +999,8 @@ const VALLEY='<svg class="valley-svg" viewBox="0 0 1440 360" preserveAspectRatio
 const STORE_KEY = "deervalley_bingo_v1";
 const DEFAULT_CONFIG = {
   meta:{ title:"鹿芝谷 賓果大挑戰", sub:"答對問題、轉動幸運轉盤，集滿三條線就賓果！", tag:"校外教學・親子體驗" },
-  board:{ size:5, min:1, max:30, winLines:3 },
+  board:{ size:5, min:1, max:30, winLines:3, winPattern:"line3" },
+  rules:{ powerups:true, powerupsPerTeam:3 },
   roster:["1號","2號","3號","4號","5號","6號","7號","8號","9號","10號","11號","12號","13號","14號","15號","16號","17號","18號","19號","20號"],
   teams:["紅隊","綠隊","黃隊","藍隊"],
   photos:{ intro:[], win:[], bg:"" },
@@ -968,7 +1012,9 @@ const DEFAULT_CONFIG = {
     {type:"photo", photoMascot:"raccoon", q:"總是搓搓手手、愛乾淨的「洗手熊」是？", options:["浣熊","小貓熊","黃鼠狼","果子狸"], answer:0, note:"洗手熊"},
     {type:"photo", photoMascot:"frog", q:"大眼睛、會伸長舌頭抓蟲的「雷哥」是？", options:["青蛙","蟾蜍","蜥蜴","壁虎"], answer:0, note:"雷哥"},
     {type:"photo", photoMascot:"beetle", q:"頭上有大大的角、鹿芝谷甲蟲館明星「角哥」是？", options:["獨角仙","鍬形蟲","金龜子","瓢蟲"], answer:0, note:"角哥"},
-    {type:"photo", photoMascot:"chicken", q:"紅紅雞冠、外號「雞王」的是哪一種家禽？", options:["雞","鴨","鵝","火雞"], answer:0, note:"雞王"}
+    {type:"photo", photoMascot:"chicken", q:"紅紅雞冠、外號「雞王」的是哪一種家禽？", options:["雞","鴨","鵝","火雞"], answer:0, note:"雞王"},
+    {type:"sound", audio:"", hint:"牠住在水邊、皮膚滑滑的，下雨天叫得最大聲。", q:"閉上眼睛聽聽看～這是哪一種動物的叫聲？", options:["青蛙","小鳥","蟬","貓咪"], answer:0, note:"雷哥（青蛙）｜請到 設定→題目管理 上傳青蛙叫聲 MP3"},
+    {type:"sound", audio:"", hint:"天一亮就「咕咕咕」叫大家起床。", q:"豎起耳朵聽～這是誰在叫呢？", options:["公雞","鴨子","小狗","綿羊"], answer:0, note:"雞王（公雞）｜請到 設定→題目管理 上傳公雞叫聲 MP3"}
   ]
 };
 
@@ -976,7 +1022,7 @@ const DEFAULT_CONFIG = {
    3) 狀態 + 工具
    ===================================================================== */
 let CFG = loadConfig();
-let state = { qIndex:0, usedQ:[], revealed:false, called:[], wheelPool:[], spinning:false, drawTimer:null, play:"question", streak:0, pick:null, bgIndex:-1, scores:[], basePts:100, dbl:false, lastCorrect:false };
+let state = { qIndex:0, usedQ:[], revealed:false, called:[], wheelPool:[], spinning:false, drawTimer:null, play:"question", streak:0, pick:null, bgIndex:-1, scores:[], basePts:100, dbl:false, lastCorrect:false, pu:[], pendPU:null, hid5050:false };
 
 function loadConfig(){
   try{ const raw=localStorage.getItem(STORE_KEY); if(raw){ return mergeDefaults(JSON.parse(raw)); } }catch(e){}
@@ -984,6 +1030,7 @@ function loadConfig(){
 }
 function mergeDefaults(c){ const d=JSON.parse(JSON.stringify(DEFAULT_CONFIG));
   c=c||{}; c.meta=Object.assign(d.meta,c.meta||{}); c.board=Object.assign(d.board,c.board||{});
+  c.rules=Object.assign(d.rules,c.rules||{});
   c.photos=Object.assign(d.photos,c.photos||{}); if(!Array.isArray(c.questions)) c.questions=d.questions;
   if(!Array.isArray(c.roster)) c.roster=d.roster; if(!Array.isArray(c.teams)||c.teams.length<2) c.teams=d.teams; return c; }
 function saveConfig(showMsg){
@@ -1008,11 +1055,13 @@ function ensureAudio(){ try{ if(!AC) AC=new (window.AudioContext||window.webkitA
 function tone(freq,dur,type,vol,delay){ if(!soundOn) return; ensureAudio(); if(!AC) return; const t=AC.currentTime+(delay||0); const o=AC.createOscillator(),g=AC.createGain(); o.type=type||"sine"; o.frequency.setValueAtTime(freq,t); o.connect(g); g.connect(AC.destination); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.18,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.start(t); o.stop(t+dur+0.03); }
 function sfx(name){ if(!soundOn) return;
   if(name==="click") tone(440,0.07,"square",0.1);
-  else if(name==="correct"){ tone(659,0.13,"triangle",0.2); tone(880,0.16,"triangle",0.2,0.1); tone(1318,0.24,"triangle",0.18,0.22); }
-  else if(name==="wrong"){ tone(196,0.22,"sawtooth",0.16); tone(146,0.3,"sawtooth",0.15,0.09); }
+  else if(name==="correct"){ /* 答對爆發：和弦 stab + 亮粉琶音 + 低頻撞擊 */
+    tone(523,0.2,"triangle",0.22); tone(659,0.22,"triangle",0.2,0); tone(784,0.28,"triangle",0.2,0.02);
+    tone(1046,0.32,"triangle",0.16,0.08); sparkle(0.55); boom(95,0.2,0.5); }
+  else if(name==="wrong"){ tone(196,0.22,"sawtooth",0.16); tone(146,0.32,"sawtooth",0.15,0.09); tone(110,0.34,"sine",0.12,0.05); }
   else if(name==="pop"){ tone(880,0.1,"sine",0.2); tone(1318,0.16,"sine",0.18,0.07); }
   else if(name==="draw"){ for(let i=0;i<10;i++) tone(520+(i%2?160:0),0.05,"square",0.06,i*0.045); }
-  else if(name==="win"){ [523,659,784,1047,1319,1568].forEach((f,i)=>tone(f,0.32,"triangle",0.2,i*0.13)); }
+  else if(name==="win"){ boom(70,0.3,0.7); [523,659,784,1047,1319,1568].forEach((f,i)=>tone(f,0.32,"triangle",0.2,i*0.12)); sparkle(0.9); }
 }
 function toggleSound(){ soundOn=!soundOn; localStorage.setItem("dv_sound",soundOn?"1":"0"); el("soundBtn").textContent=soundOn?"🔊":"🔈"; if(soundOn){ ensureAudio(); sfx("click"); } }
 
@@ -1032,6 +1081,21 @@ function stopTension(){ if(tensionTimer!==null){ clearInterval(tensionTimer); te
 function toggleMusic(){ musicOn=!musicOn; localStorage.setItem("dv_music",musicOn?"1":"0"); el("musicBtn").textContent=musicOn?"🎵":"🔕"; if(musicOn){ ensureAudio(); maybeStartTension(); } else stopTension(); }
 /* 蓄力上升音（開獎、抽學生用）*/
 function riser(dur){ if(!soundOn) return; ensureAudio(); if(!AC) return; const t=AC.currentTime; const o=AC.createOscillator(),g=AC.createGain(); o.type="sawtooth"; o.frequency.setValueAtTime(220,t); o.frequency.exponentialRampToValueAtTime(1100,t+dur); o.connect(g); g.connect(AC.destination); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.05,t+dur*0.85); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.start(t); o.stop(t+dur+0.05); }
+
+/* ===== v1.1 強化音效：噪音鼓點 / 低頻撞擊 / 心跳 / 亮粉 / 連勝疊加 ===== */
+let _noiseBuf=null;
+function noiseBuf(){ if(_noiseBuf) return _noiseBuf; if(!AC) return null; const len=Math.floor(AC.sampleRate); const b=AC.createBuffer(1,len,AC.sampleRate); const d=b.getChannelData(0); for(let i=0;i<len;i++) d[i]=Math.random()*2-1; _noiseBuf=b; return b; }
+function noiseHit(dur,freq,q,vol,delay,type){ if(!soundOn) return; ensureAudio(); if(!AC) return; const t=AC.currentTime+(delay||0); const b=noiseBuf(); if(!b) return; const s=AC.createBufferSource(); s.buffer=b; const f=AC.createBiquadFilter(); f.type=type||"bandpass"; f.frequency.setValueAtTime(freq,t); f.Q.value=q||1; const g=AC.createGain(); s.connect(f); f.connect(g); g.connect(AC.destination); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.18,t+0.004); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); s.start(t); s.stop(t+dur+0.02); }
+/* 低頻撞擊（答對／開箱）：sine 下掃 + 噪音衝擊 */
+function boom(freq,dur,vol){ if(!soundOn) return; ensureAudio(); if(!AC) return; const t=AC.currentTime; const o=AC.createOscillator(),g=AC.createGain(); o.type="sine"; o.frequency.setValueAtTime((freq||90)*1.7,t); o.frequency.exponentialRampToValueAtTime(freq||90,t+(dur||0.2)); o.connect(g); g.connect(AC.destination); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.5,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+(dur||0.2)); o.start(t); o.stop(t+(dur||0.2)+0.05); noiseHit(0.12,200,0.7,(vol||0.5)*0.5,0,"lowpass"); }
+/* 亮粉琶音（答對閃爍） */
+function sparkle(vol){ if(!soundOn) return; [1568,1976,2349,2637].forEach((f,i)=>tone(f,0.13,"triangle",(vol||0.5)*0.12,0.04*i)); }
+/* 心跳（開獎蓄力）：lub-dub，逐漸加速 */
+function heartbeat(dur){ if(!soundOn) return; ensureAudio(); if(!AC) return; let t=0, gap=0.5, beat=0; (function go(){ if(t>=dur) return; tone(58,0.13,"sine",0.5,0); tone(46,0.16,"sine",0.42,0.14); beat++; gap=Math.max(0.16,0.5-beat*0.05); t+=gap; setTimeout(go,gap*1000); })(); }
+/* 緊張鼓點（開獎蓄力）：tom 連擊漸快漸強 */
+function drumRoll(dur){ if(!soundOn) return; ensureAudio(); if(!AC) return; let t=0, gap=0.13; (function go(){ if(t>=dur) return; const prog=t/dur; noiseHit(0.06,120+prog*90,0.9,0.1+prog*0.14,0,"bandpass"); gap=Math.max(0.045,0.13-prog*0.09); t+=gap; setTimeout(go,gap*1000); })(); }
+/* 連勝疊加：連勝越高，琶音越高越多層 */
+function comboHit(streak){ if(!soundOn) return; const base=[523,659,784,1046]; const k=Math.max(1,Math.min(streak,6)); for(let i=0;i<k;i++){ tone(base[i%4]*(1+Math.floor(i/4)),0.16,"triangle",0.14,0.05*i); } boom(110,0.18,0.3+Math.min(streak,5)*0.05); }
 
 /* --- 每題切換鮮明背景（Kahoot 感）--- */
 const GAME_BGS=[
@@ -1077,7 +1141,8 @@ function renderGame(){
   el("soundBtn").textContent = soundOn?"🔊":"🔈"; el("musicBtn").textContent = musicOn?"🎵":"🔕";
   if(el("zhuyinBtn")) el("zhuyinBtn").classList.toggle("dim",!zhuyinOn);
   state.wheelPool = range(CFG.board.min, CFG.board.max);
-  state.called = []; state.streak=0; state.bgIndex=-1; state.scores=CFG.teams.map(()=>0); state.dbl=false; renderScoreboard();
+  state.called = []; state.streak=0; state.bgIndex=-1; state.scores=CFG.teams.map(()=>0); state.dbl=false; state.pu=puInit(); renderScoreboard();
+  renderGoalBanner(); updateWinGoal();
   setPlay("question"); renderQuestion(); resetDraw(); renderBoard(); updateLatest("—");
 }
 /* 從設定回來時：不清空進度，只重新整理畫面 */
@@ -1086,6 +1151,8 @@ function refreshGame(){
   const total=range(CFG.board.min,CFG.board.max);
   if(state.wheelPool.length+state.called.length!==total.length){ state.called=state.called.filter(x=>total.includes(x)); state.wheelPool=total.filter(x=>!state.called.includes(x)); }
   if(state.qIndex>=CFG.questions.length) state.qIndex=0;
+  if(!Array.isArray(state.pu)||state.pu.length!==CFG.teams.length) state.pu=puInit();
+  renderScoreboard(); renderGoalBanner(); updateWinGoal();
   renderQuestion(); resetDraw(); renderBoard();
 }
 function curQ(){ return CFG.questions[state.qIndex] || {type:"text",q:"（尚無題目，請到設定新增）",options:[],answer:0}; }
@@ -1095,21 +1162,25 @@ const ANS_SHAPES=[
   '<svg class="shape" viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="#fff"/></svg>',
   '<svg class="shape" viewBox="0 0 40 40"><rect x="7" y="7" width="26" height="26" rx="5" fill="#fff"/></svg>'];
 function renderQuestion(){
-  state.revealed=false; state.pick=null;
+  state.revealed=false; state.pick=null; state.hid5050=false; state.pendPU=null;
   const q=curQ(); cycleBg();
   el("qCounter").textContent = "第 "+(state.qIndex+1)+" 題";
   const hasImg = !!(q.photo || q.photoMascot);
-  el("qTypeBadge").textContent = hasImg?"看照片猜答案":"文字題";
-  let media="";
-  if(q.photo){ media='<img src="'+q.photo+'" alt="題目照片">'; }
-  else if(q.photoMascot){ media='<span class="m">'+mascotSVG(q.photoMascot)+'</span>'; }
-  el("qMedia").innerHTML = media ? ('<div class="q-photo">'+media
-      +'<button class="img-edit" onclick="changeCurrentImage()" title="更換這題的圖片">✎ 換圖</button>'
-      +(q.photo?'<button class="img-edit del" onclick="clearCurrentImage()" title="移除這張圖片">✕</button>':'')+'</div>') : '';
+  el("qTypeBadge").textContent = q.type==="sound" ? "聽聲音猜答案" : (hasImg?"看照片猜答案":"文字題");
+  if(q.type==="sound"){
+    el("qMedia").innerHTML = soundMediaHTML(q);
+  } else {
+    let media="";
+    if(q.photo){ media='<img src="'+q.photo+'" alt="題目照片">'; }
+    else if(q.photoMascot){ media='<span class="m">'+mascotSVG(q.photoMascot)+'</span>'; }
+    el("qMedia").innerHTML = media ? ('<div class="q-photo">'+media
+        +'<button class="img-edit" onclick="changeCurrentImage()" title="更換這題的圖片">✎ 換圖</button>'
+        +(q.photo?'<button class="img-edit del" onclick="clearCurrentImage()" title="移除這張圖片">✕</button>':'')+'</div>') : '';
+  }
   el("qText").innerHTML = zhuyinHTML(q.q);
   el("opts").innerHTML = (q.options||[]).map((o,i)=>
     '<button class="ans c'+i+'" data-i="'+i+'" onclick="pickOpt('+i+')">'+ANS_SHAPES[i]+'<span class="atext">'+zhuyinHTML(o)+'</span></button>').join("");
-  renderQActions(false); el("teamAward").innerHTML=""; setHost(rnd(HOST_HYPE)); updateHud(); maybeStartTension();
+  renderQActions(false); el("teamAward").innerHTML=""; clearHint(); hidePuPicker(); renderPuBar(); setHost(rnd(HOST_HYPE)); updateHud(); maybeStartTension();
 }
 function escapeHTML(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
@@ -1191,7 +1262,7 @@ function revealAnswer(){
     if(state.pick===q.answer){ sfx("correct"); state.streak++; state.lastCorrect=true; setHost(rnd(HOST_WIN),"happy"); celebrateCorrect(); showTeamAward(); }
     else { sfx("wrong"); state.streak=0; state.lastCorrect=false; setHost(rnd(HOST_OOPS),"oops"); }
   } else { sfx("pop"); state.lastCorrect=true; setHost("正確答案在這裡！加分給答對的那一隊～","happy"); showTeamAward(); }
-  renderQActions(true); updateHud();
+  renderQActions(true); updateHud(); hidePuPicker(); renderPuBar();
 }
 function gotoWheel(){ sfx("click"); setHost("答對獎勵！打開森林寶箱吧～","happy"); setPlay("wheel"); }
 /* 在遊戲畫面直接換這一題的中間圖片（支援 PNG / JPG 等照片檔）*/
@@ -1233,10 +1304,10 @@ function drawNumber(){
   const stage=el("chestStage"), orb=el("drawOrb"), res=el("drawResult");
   const k=Math.floor(Math.random()*state.wheelPool.length), chosen=state.wheelPool[k];
   // 1) 寶箱抖動蓄力
-  resetDraw(); stage.classList.add("shaking"); res.textContent="?"; rattleSfx(1.05); riser(1.05);
+  resetDraw(); stage.classList.add("shaking"); res.textContent="?"; drumRoll(1.15); heartbeat(1.15); riser(1.1);
   setTimeout(()=>{
     // 2) 蓋子彈開、光束射出、號碼球升起 + 快速跳號
-    stage.classList.remove("shaking"); stage.classList.add("open"); sfx("pop");
+    stage.classList.remove("shaking"); stage.classList.add("open"); sfx("pop"); boom(80,0.24,0.6);
     let t=0, gap=70;
     (function tick(){
       if(t<820){ res.textContent=state.wheelPool[Math.floor(Math.random()*state.wheelPool.length)]; gap*=1.12; t+=gap; setTimeout(tick,gap); }
@@ -1265,7 +1336,7 @@ function renderBoard(){
   updateHud();
 }
 function markBoard(x){ const c=document.querySelector('#board .cell[data-n="'+x+'"]'); if(c){ c.classList.add("hit"); } el("boardCount").textContent=state.called.length+" / "+range(CFG.board.min,CFG.board.max).length; updateHud(); }
-function resetRound(){ state.called=[]; state.wheelPool=range(CFG.board.min,CFG.board.max); state.usedQ=[]; state.streak=0; resetDraw(); renderBoard(); updateLatest("—"); el("btnSpin").disabled=false; setPlay("question"); renderQuestion(); setHost("新的一局開始～加油！"); toast("已重設本局，可以重新開始！"); }
+function resetRound(){ state.called=[]; state.wheelPool=range(CFG.board.min,CFG.board.max); state.usedQ=[]; state.streak=0; state.dbl=false; state.pu=puInit(); resetDraw(); renderBoard(); renderScoreboard(); renderGoalBanner(); updateWinGoal(); updateLatest("—"); el("btnSpin").disabled=false; setPlay("question"); renderQuestion(); setHost("新的一局開始～加油！"); toast("已重設本局，可以重新開始！"); }
 
 /* =====================================================================
    8) 抽學生
@@ -1323,13 +1394,14 @@ function fxConfetti(n){
   })();
 }
 function celebrateCorrect(){
-  fxConfetti(120);
+  fxConfetti(120 + Math.min(state.streak,6)*30);
+  if(state.streak>=2) comboHit(state.streak);
   const mid=(curQ().photoMascot)||"alpaca";
   el("cele").innerHTML='<div class="cele-card"><span class="m">'+mascotSVG(mid)+'</span>'
     +'<svg class="tick" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="#6F9A3F"/><path d="M14 25 l7 7 l14 -16" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
     +'<span class="big">答對！</span></div>';
   const c=el("cele"); c.classList.remove("show"); void c.offsetWidth; c.classList.add("show"); clearTimeout(c._t); c._t=setTimeout(()=>c.classList.remove("show"),1200);
-  if(state.streak>=2){ const s=el("streakFlair"); s.textContent="🔥 連勝 "+state.streak+" 題！"; s.classList.remove("show"); void s.offsetWidth; s.classList.add("show"); }
+  if(state.streak>=2){ const s=el("streakFlair"); s.textContent=(state.streak>=4?"🔥🔥 連勝 ":"🔥 連勝 ")+state.streak+" 題！"+(state.streak>=4?" 太猛了！":""); s.classList.toggle("mega",state.streak>=4); s.classList.remove("show"); void s.offsetWidth; s.classList.add("show"); }
 }
 
 /* ===== 隊伍計分 ===== */
@@ -1339,8 +1411,10 @@ function renderScoreboard(){
   const sb=el("scoreboard"); if(!sb) return;
   if(!CFG.teams||CFG.teams.length<2){ sb.style.display="none"; return; }
   if(state.scores.length!==CFG.teams.length) state.scores=CFG.teams.map((_,i)=>state.scores[i]||0);
+  if(!Array.isArray(state.pu)||state.pu.length!==CFG.teams.length) state.pu=puInit();
+  const puOn=CFG.rules&&CFG.rules.powerups;
   sb.style.display="flex";
-  sb.innerHTML=CFG.teams.map((n,i)=>'<div class="team-chip" style="--tc:'+teamColor(i)+'"><span class="tn">'+escapeHTML(n)+'</span><span class="ts" id="ts'+i+'">'+(state.scores[i]||0)+'</span></div>').join("");
+  sb.innerHTML=CFG.teams.map((n,i)=>'<div class="team-chip" style="--tc:'+teamColor(i)+'"><span class="tn">'+escapeHTML(n)+'</span><span class="ts" id="ts'+i+'">'+(state.scores[i]||0)+'</span>'+(puOn?'<span class="tp" id="tp'+i+'" title="剩餘道具卡">🎴'+(state.pu[i]||0)+'</span>':'')+'</div>').join("");
 }
 function showTeamAward(){
   const ta=el("teamAward"); if(!ta) return;
@@ -1421,12 +1495,27 @@ function renderBasic(){
         <div class="field"><label>賓果卡大小</label><select id="setSize"><option value="3">3 × 3</option><option value="4">4 × 4</option><option value="5">5 × 5</option></select></div>
         <div class="field"><label>號碼最小值</label><input type="number" id="setMin" value="${CFG.board.min}"></div>
         <div class="field"><label>號碼最大值</label><input type="number" id="setMax" value="${CFG.board.max}"></div>
-        <div class="field"><label>幾條線算贏</label><input type="number" id="setLines" value="${CFG.board.winLines}" min="1" max="5"></div>
       </div>
-      <div class="hint">提示：號碼範圍要 ≥ 卡片格數。例如 5×5 建議 1–25 以上（越大張數差異越多）。</div>
+      <div class="row">
+        <div class="field"><label>勝利圖樣（本局目標）</label><select id="setPattern">
+          <option value="line1">一條線</option><option value="line2">二條線</option><option value="line3">三條線</option>
+          <option value="corners">四個角落</option><option value="cross">十字（中央＋字）</option><option value="diag">交叉 X（雙對角）</option><option value="blackout">全部塗滿 Blackout</option>
+        </select></div>
+        <div class="field"><label>幾條線算贏（線型圖樣用）</label><input type="number" id="setLines" value="${CFG.board.winLines}" min="1" max="5"></div>
+      </div>
+      <div class="hint">提示：號碼範圍要 ≥ 卡片格數。例如 5×5 建議 1–25 以上。勝利圖樣會顯示在遊戲畫面上方當作本局目標。</div>
+      <div style="height:10px"></div>
+      <div style="font-weight:900;margin-bottom:6px">🎴 道具救援卡</div>
+      <div class="row">
+        <div class="field"><label>啟用道具</label><select id="setPU"><option value="1">開啟</option><option value="0">關閉</option></select></div>
+        <div class="field"><label>每隊開局張數</label><input type="number" id="setPUN" value="${CFG.rules?CFG.rules.powerupsPerTeam:3}" min="0" max="9"></div>
+      </div>
+      <div class="hint">道具效果：50:50 刪兩個錯答 ・ 求救 看提示 ・ 加倍 下次答對分數 ×2 ・ 再抽 換一位學生回答。每用一個扣該隊一張。</div>
       <button class="btn green" style="margin-top:10px" onclick="applyBasic()">套用基本設定</button>
     </div>`;
   el("setSize").value = String(CFG.board.size);
+  if(el("setPattern")) el("setPattern").value = (CFG.board.winPattern||"line3");
+  if(el("setPU")) el("setPU").value = (CFG.rules&&CFG.rules.powerups)?"1":"0";
 }
 function applyBasic(){
   CFG.meta.title=el("setTitle").value.trim()||"鹿芝谷 賓果大挑戰";
@@ -1434,6 +1523,10 @@ function applyBasic(){
   CFG.board.size=+el("setSize").value; CFG.board.min=Math.max(1,+el("setMin").value||1);
   CFG.board.max=Math.max(CFG.board.min+ (CFG.board.size*CFG.board.size), +el("setMax").value||25);
   CFG.board.winLines=Math.max(1,+el("setLines").value||3);
+  CFG.board.winPattern = (el("setPattern")?el("setPattern").value:"line3");
+  if(!CFG.rules) CFG.rules={};
+  CFG.rules.powerups = (el("setPU")?el("setPU").value:"1")==="1";
+  CFG.rules.powerupsPerTeam = Math.max(0,Math.min(9,+el("setPUN").value||3));
   const cells=CFG.board.size*CFG.board.size;
   if(CFG.board.max-CFG.board.min+1 < cells){ CFG.board.max=CFG.board.min+cells+4; toast("號碼範圍太小，已自動調大"); }
   saveConfig(true); renderBasic();
@@ -1447,9 +1540,9 @@ function renderQList(){
   let h='<button class="btn green" onclick="editQuestion(-1)">＋ 新增題目</button><div style="height:12px"></div>';
   h += CFG.questions.map((q,i)=>`
     <div class="qrow">
-      <div style="width:54px;text-align:center">${ q.photo ? '<img src="'+q.photo+'" style="width:50px;height:38px;object-fit:cover;border:2px solid var(--line);border-radius:8px">' : (q.photoMascot ? '<span style="display:inline-block;width:48px;height:40px">'+mascotSVG(q.photoMascot)+'</span>' : '<span class="badge text">字</span>') }</div>
+      <div style="width:54px;text-align:center">${ q.type==="sound" ? '<span style="font-size:30px">'+(q.audio?'🔊':'🔇')+'</span>' : (q.photo ? '<img src="'+q.photo+'" style="width:50px;height:38px;object-fit:cover;border:2px solid var(--line);border-radius:8px">' : (q.photoMascot ? '<span style="display:inline-block;width:48px;height:40px">'+mascotSVG(q.photoMascot)+'</span>' : '<span class="badge text">字</span>')) }</div>
       <div class="qmeta">
-        <div><span class="badge ${q.type}">${q.type==="photo"?"照片題":"文字題"}</span> <b>${escapeHTML(q.q)}</b></div>
+        <div><span class="badge ${q.type}">${q.type==="photo"?"照片題":(q.type==="sound"?"聲音題":"文字題")}</span> <b>${escapeHTML(q.q)}</b></div>
         <div class="hint">答案：${escapeHTML((q.options&&q.options[q.answer])||"—")}　${q.note?("（"+escapeHTML(q.note)+"）"):""}</div>
       </div>
       <button class="btn ghost" onclick="editQuestion(${i})">編輯</button>
@@ -1459,7 +1552,7 @@ function renderQList(){
 }
 function delQuestion(i){ if(confirm("確定刪除這題？")){ CFG.questions.splice(i,1); saveConfig(); renderQList(); } }
 function editQuestion(i){
-  const q = i<0 ? {type:"text",q:"",options:["","","",""],answer:0,note:"",photoMascot:"",photo:""} : JSON.parse(JSON.stringify(CFG.questions[i]));
+  const q = i<0 ? {type:"text",q:"",options:["","","",""],answer:0,note:"",photoMascot:"",photo:"",audio:"",hint:""} : JSON.parse(JSON.stringify(CFG.questions[i]));
   const opts = (q.options&&q.options.length?q.options:["","","",""]).concat(["","","",""]).slice(0,4);
   const mascotOpts = MASCOT_ORDER.map(id=>'<option value="'+id+'"'+(q.photoMascot===id?" selected":"")+'>'+MASCOTS[id].name+'（'+MASCOTS[id].sp+'）</option>').join("");
   el("t-q").innerHTML = `
@@ -1478,11 +1571,24 @@ function editQuestion(i){
           <select id="eqMascot"><option value="">不顯示（純文字題）</option>${mascotOpts}</select></div>
       </div>
 
-      <div class="field"><label>題型標示（顯示用，放了圖片就會自動當作照片題）</label>
+      <div class="card-box" style="background:#fff;border-color:#5E8B86">
+        <label style="font-weight:900">🔊 動物叫聲音檔（聲音題用，選填，支援 MP3 / WAV / M4A / OGG）</label>
+        <div class="hint" style="margin:4px 0 8px">放了音檔、題型選「聽聲音猜答案」，遊戲出這題時中間會顯示大大的播放鍵，老師按一下就播放叫聲讓學生猜。</div>
+        <div id="eqAudioPrev" style="margin-bottom:8px">${q.audio?'<audio src="'+q.audio+'" controls style="max-width:100%"></audio>':'<span class="hint">目前未放音檔</span>'}</div>
+        <div class="row" style="align-items:center">
+          <input type="file" accept="audio/*" onchange="loadQAudio(this)">
+          <button class="btn ghost" type="button" onclick="clearEditAudio()">移除音檔</button>
+        </div>
+        <input type="hidden" id="eqAudioData" value="${attr(q.audio||"")}">
+      </div>
+
+      <div class="field"><label>題型標示（放了圖片＝照片題；放了音檔請選聲音題）</label>
         <select id="eqType">
           <option value="text"${q.type==="text"?" selected":""}>文字題</option>
           <option value="photo"${q.type==="photo"?" selected":""}>看照片猜答案</option>
+          <option value="sound"${q.type==="sound"?" selected":""}>聽聲音猜答案（動物叫聲）</option>
         </select></div>
+      <div class="field"><label>提示（按「求救」道具時顯示這句，選填）</label><input type="text" id="eqHint" value="${attr(q.hint||"")}" placeholder="例：牠住在水邊，下雨天叫得最大聲。"></div>
       <div class="field"><label>題目文字</label><textarea id="eqQ">${escapeHTML(q.q)}</textarea></div>
       <div class="row">
         <div class="field"><label>選項 A</label><input type="text" id="eqO0" value="${attr(opts[0])}"></div>
@@ -1521,6 +1627,7 @@ function saveQuestion(i){
     options:[el("eqO0").value,el("eqO1").value,el("eqO2").value,el("eqO3").value].map(s=>s.trim()).filter(s=>s!==""),
     answer:+el("eqAns").value, note:el("eqNote").value.trim(),
     photo:(el("eqPhotoData").value||""), photoMascot:(el("eqMascot")?el("eqMascot").value:""),
+    audio:(el("eqAudioData")?el("eqAudioData").value:""), hint:(el("eqHint")?el("eqHint").value.trim():""),
     explainText:(el("eqExpText")?el("eqExpText").value.trim():""), explainImg:(el("eqExpImgData")?el("eqExpImgData").value:""), explainVideo:(el("eqExpVideo")?el("eqExpVideo").value.trim():"") };
   if(!q.q){ toast("請先輸入題目文字"); return; }
   if(q.answer>=q.options.length) q.answer=0;
@@ -1634,6 +1741,109 @@ function generateCards(){
    13) 啟動
    ===================================================================== */
 function init(){ initPetals(); const vi=el("valleyIntro"),vg=el("valleyGame"); if(vi) vi.innerHTML=VALLEY; if(vg) vg.innerHTML=VALLEY; if(BGM_SRC){ try{ BGM=new Audio(BGM_SRC); BGM.loop=true; BGM.volume=0.45; }catch(e){} } applyBgImage(); renderIntro(); }
+/* =====================================================================
+   12) v1.1 — 道具救援卡 / 勝利圖樣 / 聲音題型
+   ===================================================================== */
+/* ---- 道具救援卡 ---- */
+function puInit(){ const n=(CFG.rules&&CFG.rules.powerups)?(CFG.rules.powerupsPerTeam||0):0; return (CFG.teams||[]).map(()=>n); }
+function renderPuBar(){
+  const bar=el("puBar"); if(!bar) return;
+  const on=!!(CFG.rules&&CFG.rules.powerups)&&CFG.teams&&CFG.teams.length>=2;
+  if(!on||state.revealed){ bar.style.display="none"; bar.innerHTML=""; return; }
+  bar.style.display="flex";
+  const total=(state.pu||[]).reduce((a,b)=>a+(b||0),0);
+  const q=curQ(); const optN=(q.options||[]).length;
+  const items=[
+    {k:"5050",cls:"p5050",ic:"⚖️",nm:"50:50",dis: state.hid5050 || optN<=2},
+    {k:"hint",cls:"phint",ic:"💡",nm:"求救提示",dis:false},
+    {k:"double",cls:"pdbl",ic:"✖️2",nm:"加倍",dis: state.dbl},
+    {k:"redraw",cls:"predraw",ic:"🎲",nm:"再抽學生",dis:false}
+  ];
+  bar.innerHTML='<div class="pu-title">🎴 道具救援卡（場上剩 '+total+' 張）</div>'+items.map(it=>
+    '<button class="pu-btn '+it.cls+'" '+((total<=0||it.dis)?"disabled":"")+' onclick="puClick(\''+it.k+'\')"><span class="pu-ic">'+it.ic+'</span><span class="pu-nm">'+it.nm+'</span></button>').join("");
+}
+const PU_NAME={ "5050":"50:50（刪兩個錯答）","hint":"求救（看提示）","double":"加倍（下次答對 ×2）","redraw":"再抽學生" };
+function puClick(kind){ if(state.revealed) return; sfx("click"); showPuPicker(kind); }
+function showPuPicker(kind){
+  state.pendPU=kind; const p=el("puPicker"); if(!p) return;
+  p.innerHTML='<span class="pp-label">哪一隊要使用「'+PU_NAME[kind]+'」？</span>'+CFG.teams.map((n,i)=>
+    '<button class="pp-team" style="--tc:'+teamColor(i)+'" '+((state.pu[i]||0)<=0?"disabled":"")+' onclick="puApply(\''+kind+'\','+i+')">'+escapeHTML(n)+'（🎴'+(state.pu[i]||0)+'）</button>').join("")
+    +'<button class="pp-cancel" onclick="hidePuPicker()">取消</button>';
+  p.classList.add("show");
+}
+function hidePuPicker(){ state.pendPU=null; const p=el("puPicker"); if(p){ p.classList.remove("show"); p.innerHTML=""; } }
+function puApply(kind,i){
+  if((state.pu[i]||0)<=0){ toast("這一隊沒有道具卡了"); return; }
+  state.pu[i]=(state.pu[i]||0)-1; renderScoreboard();
+  const teamName=CFG.teams[i];
+  if(kind==="5050") apply5050();
+  else if(kind==="hint") applyHint();
+  else if(kind==="double"){ state.dbl=true; toast(teamName+" 使用加倍！下次答對分數 ×2"); setHost(teamName+" 開啟加倍！這題答對拿雙倍分數～","happy"); }
+  else if(kind==="redraw") applyRedraw();
+  sfx("pop"); fxConfetti(24); hidePuPicker(); renderPuBar();
+}
+function apply5050(){
+  const q=curQ(); const opts=[...document.querySelectorAll("#opts .ans")];
+  let wrong=opts.map((o,idx)=>idx).filter(idx=>idx!==q.answer);
+  wrong=shuffle(wrong);
+  const removeCount=Math.min(2, Math.max(0, opts.length-2));
+  wrong.slice(0,removeCount).forEach(idx=>{ opts[idx].classList.add("pu-hide"); if(state.pick===idx){ state.pick=null; opts[idx].classList.remove("picked"); } });
+  state.hid5050=true; toast("50:50！已刪掉兩個錯誤選項"); setHost("叮咚～刪掉兩個了，仔細選喔！","happy");
+}
+function applyHint(){
+  const q=curQ(); let h=q.hint;
+  if(!h){ const ans=(q.options&&q.options[q.answer])||""; h = ans?("答案的第一個字是「"+[...ans][0]+"」"):"這題沒有額外提示喔～"; }
+  const b=el("puHint"); if(b){ b.innerHTML="💡 "+zhuyinHTML(h); b.classList.add("show"); }
+  setHost("提示來囉～仔細聽好～","happy");
+}
+function clearHint(){ const b=el("puHint"); if(b){ b.classList.remove("show"); b.innerHTML=""; } }
+function applyRedraw(){ toast("再抽一位學生回答！"); drawStudent(); }
+
+/* ---- 勝利圖樣 ---- */
+function winPatternLabel(p){ return {line1:"一條線",line2:"二條線",line3:"三條線",corners:"四個角落",cross:"十字（＋）",diag:"交叉 X",blackout:"全部塗滿"}[p]||"三條線"; }
+function winPatternCells(p){
+  if(p==="corners") return [0,4,20,24];
+  if(p==="cross") return [2,7,12,17,22,10,11,13,14];
+  if(p==="diag") return [0,6,12,18,24,4,8,16,20];
+  if(p==="blackout") return Array.from({length:25},(_,i)=>i);
+  const lines={line1:1,line2:2,line3:3}[p]||3; const c=[]; for(let r=0;r<lines;r++) for(let col=0;col<5;col++) c.push(r*5+col); return c;
+}
+function miniPatternSVG(p){
+  const on=new Set(winPatternCells(p)); let r='<svg class="mini" viewBox="0 0 50 50">';
+  for(let i=0;i<25;i++){ const x=(i%5)*10, y=Math.floor(i/5)*10; const cls=on.has(i)?"on":"c"; r+='<rect class="'+cls+'" x="'+(x+1)+'" y="'+(y+1)+'" width="8" height="8" rx="1.5"/>'; }
+  return r+'</svg>';
+}
+function renderGoalBanner(){
+  const b=el("goalBanner"); if(!b) return;
+  const p=(CFG.board&&CFG.board.winPattern)||"line3";
+  let name=winPatternLabel(p); if(p==="line1"||p==="line2"||p==="line3") name="集滿 "+CFG.board.winLines+" 條線";
+  b.innerHTML=miniPatternSVG(p)+'<span><span class="gb-label">本局目標</span> <span class="gb-name">'+name+'，就喊賓果！</span></span>';
+}
+function updateWinGoal(){
+  const p=(CFG.board&&CFG.board.winPattern)||"line3";
+  const t=el("winLinesTxt"); if(t) t.textContent=CFG.board.winLines;
+  const wr=document.querySelector(".win-reminder");
+  if(wr){ let name=winPatternLabel(p); if(p.indexOf("line")===0) name="任意 "+CFG.board.winLines+" 條線"; wr.innerHTML='集滿 <b>'+name+'</b> 就喊「賓果！」'; }
+}
+
+/* ---- 聲音題型 ---- */
+function soundMediaHTML(q){
+  if(q.audio) return '<div class="sound-media"><button class="sound-play" id="soundPlayBtn" onclick="playQAudio()" title="播放叫聲">🔊</button><div class="sound-cap">▶ 按一下播放動物叫聲</div></div>';
+  return '<div class="sound-media"><div class="sound-empty">🔇 這題是「聽聲音猜答案」<br>老師尚未上傳叫聲音檔<br><span style="font-size:.85em;opacity:.85">到 設定 → 題目管理 → 編輯這題 上傳 MP3</span></div></div>';
+}
+function playQAudio(){
+  const q=curQ(); if(!q.audio) return; const a=el("qAudio"); if(!a) return;
+  try{ a.src=q.audio; a.currentTime=0; a.play(); }catch(e){}
+  const btn=el("soundPlayBtn"); if(btn){ btn.classList.add("playing"); a.onended=()=>btn.classList.remove("playing"); }
+}
+function loadQAudio(input){ const f=input.files[0]; if(!f) return;
+  if(f.size>6*1024*1024) toast("音檔較大（>6MB），建議用 10 秒內短音檔，以免超過瀏覽器容量");
+  const rd=new FileReader();
+  rd.onload=()=>{ el("eqAudioData").value=rd.result; el("eqAudioPrev").innerHTML='<audio src="'+rd.result+'" controls style="max-width:100%"></audio>'; if(el("eqType")&&el("eqType").value!=="sound") el("eqType").value="sound"; toast("已選好音檔，記得按「儲存題目」"); };
+  rd.readAsDataURL(f);
+}
+function clearEditAudio(){ el("eqAudioData").value=""; el("eqAudioPrev").innerHTML='<span class="hint">已移除音檔（按「儲存題目」生效）</span>'; }
+
 window.addEventListener("DOMContentLoaded", init);
 </script>
 </body>
