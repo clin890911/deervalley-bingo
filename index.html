@@ -585,6 +585,25 @@ rt{font-family:var(--font);font-weight:600;font-size:.5em;color:var(--sage);line
 .sound-cap{font-weight:900;color:var(--green-d)}
 .sound-empty{color:#b06a4a;font-weight:800;background:#fff3ef;border:2px dashed #e0a48c;border-radius:12px;padding:10px 16px;text-align:center}
 .streak-flair.mega{font-size:clamp(1.5rem,4.4vw,2.6rem)}
+
+/* ===== 版面：圖片區自動縮放，4 個選項永遠完整顯示（分隊積分／道具開啟時也流暢）===== */
+.qcard{overflow:hidden}
+.qmedia{flex:1 1 auto;min-height:0;align-items:center}
+.qmedia .q-photo{height:100%;max-height:230px;min-height:84px}
+.qmedia .q-photo img{max-height:100%}
+.qmedia .sound-media{flex:1 1 auto;justify-content:center}
+.answers{margin-top:10px}
+.pu-bar,.pu-picker{flex:0 0 auto}
+.pstate{padding-bottom:12px}
+@media (max-height:780px){
+  .qmedia .q-photo{max-height:165px}
+  .qmedia .q-photo img{max-height:165px}
+  .sound-play{width:96px;height:96px;font-size:2.3rem}
+  .ans{padding:.62em 1.1em}
+  .qtext{font-size:clamp(1.15rem,2.5vw,1.8rem);margin:.05em 0}
+  .qcard{gap:7px;padding:12px 20px}
+  .pu-btn{padding:5px 12px;min-width:82px}
+}
 </style>
 </head>
 <body>
@@ -646,7 +665,7 @@ rt{font-family:var(--font);font-weight:600;font-size:.5em;color:var(--sage);line
       <span class="hud-chip" id="qChip">第 1 / 8 題</span>
       <span class="hud-chip streak" id="streakChip">🔥 0</span>
       <button class="hud-chip board-chip" id="calledChip" onclick="setPlay('wheel')">⭐ 已開 0</button>
-      <button class="hud-chip board-chip" onclick="showRank()" title="隊伍排名">🏆 排名</button>
+      <button class="hud-chip board-chip" id="rankBtn" onclick="showRank()" title="隊伍排名">🏆 排名</button>
     </div>
     <div class="scoreboard" id="scoreboard"></div>
     <div class="goal-banner" id="goalBanner"></div>
@@ -1000,7 +1019,7 @@ const STORE_KEY = "deervalley_bingo_v1";
 const DEFAULT_CONFIG = {
   meta:{ title:"鹿芝谷 賓果大挑戰", sub:"答對問題、轉動幸運轉盤，集滿三條線就賓果！", tag:"校外教學・親子體驗" },
   board:{ size:5, min:1, max:30, winLines:3, winPattern:"line3" },
-  rules:{ powerups:true, powerupsPerTeam:3 },
+  rules:{ teamScore:false, powerups:false, powerupsPerTeam:3 },
   roster:["1號","2號","3號","4號","5號","6號","7號","8號","9號","10號","11號","12號","13號","14號","15號","16號","17號","18號","19號","20號"],
   teams:["紅隊","綠隊","黃隊","藍隊"],
   photos:{ intro:[], win:[], bg:"" },
@@ -1141,7 +1160,7 @@ function renderGame(){
   el("soundBtn").textContent = soundOn?"🔊":"🔈"; el("musicBtn").textContent = musicOn?"🎵":"🔕";
   if(el("zhuyinBtn")) el("zhuyinBtn").classList.toggle("dim",!zhuyinOn);
   state.wheelPool = range(CFG.board.min, CFG.board.max);
-  state.called = []; state.streak=0; state.bgIndex=-1; state.scores=CFG.teams.map(()=>0); state.dbl=false; state.pu=puInit(); renderScoreboard();
+  state.called = []; state.streak=0; state.bgIndex=-1; state.scores=CFG.teams.map(()=>0); state.dbl=false; state.pu=puInit(); renderScoreboard(); applyModeUI();
   renderGoalBanner(); updateWinGoal();
   setPlay("question"); renderQuestion(); resetDraw(); renderBoard(); updateLatest("—");
 }
@@ -1152,7 +1171,7 @@ function refreshGame(){
   if(state.wheelPool.length+state.called.length!==total.length){ state.called=state.called.filter(x=>total.includes(x)); state.wheelPool=total.filter(x=>!state.called.includes(x)); }
   if(state.qIndex>=CFG.questions.length) state.qIndex=0;
   if(!Array.isArray(state.pu)||state.pu.length!==CFG.teams.length) state.pu=puInit();
-  renderScoreboard(); renderGoalBanner(); updateWinGoal();
+  renderScoreboard(); applyModeUI(); renderGoalBanner(); updateWinGoal();
   renderQuestion(); resetDraw(); renderBoard();
 }
 function curQ(){ return CFG.questions[state.qIndex] || {type:"text",q:"（尚無題目，請到設定新增）",options:[],answer:0}; }
@@ -1261,7 +1280,7 @@ function revealAnswer(){
   if(state.pick!=null){
     if(state.pick===q.answer){ sfx("correct"); state.streak++; state.lastCorrect=true; setHost(rnd(HOST_WIN),"happy"); celebrateCorrect(); showTeamAward(); }
     else { sfx("wrong"); state.streak=0; state.lastCorrect=false; setHost(rnd(HOST_OOPS),"oops"); }
-  } else { sfx("pop"); state.lastCorrect=true; setHost("正確答案在這裡！加分給答對的那一隊～","happy"); showTeamAward(); }
+  } else { sfx("pop"); state.lastCorrect=true; setHost(teamScoreOn()?"正確答案在這裡！加分給答對的那一隊～":"正確答案在這裡！","happy"); showTeamAward(); }
   renderQActions(true); updateHud(); hidePuPicker(); renderPuBar();
 }
 function gotoWheel(){ sfx("click"); setHost("答對獎勵！打開森林寶箱吧～","happy"); setPlay("wheel"); }
@@ -1409,16 +1428,16 @@ const TEAM_COLORS=["#D07A3C","#6F9A3F","#B0813F","#5E8B86","#B38369","#C79A4E"];
 function teamColor(i){ return TEAM_COLORS[i%TEAM_COLORS.length]; }
 function renderScoreboard(){
   const sb=el("scoreboard"); if(!sb) return;
-  if(!CFG.teams||CFG.teams.length<2){ sb.style.display="none"; return; }
+  if(!teamScoreOn()){ sb.style.display="none"; sb.innerHTML=""; return; }
   if(state.scores.length!==CFG.teams.length) state.scores=CFG.teams.map((_,i)=>state.scores[i]||0);
   if(!Array.isArray(state.pu)||state.pu.length!==CFG.teams.length) state.pu=puInit();
-  const puOn=CFG.rules&&CFG.rules.powerups;
+  const showPu=puOn();
   sb.style.display="flex";
-  sb.innerHTML=CFG.teams.map((n,i)=>'<div class="team-chip" style="--tc:'+teamColor(i)+'"><span class="tn">'+escapeHTML(n)+'</span><span class="ts" id="ts'+i+'">'+(state.scores[i]||0)+'</span>'+(puOn?'<span class="tp" id="tp'+i+'" title="剩餘道具卡">🎴'+(state.pu[i]||0)+'</span>':'')+'</div>').join("");
+  sb.innerHTML=CFG.teams.map((n,i)=>'<div class="team-chip" style="--tc:'+teamColor(i)+'"><span class="tn">'+escapeHTML(n)+'</span><span class="ts" id="ts'+i+'">'+(state.scores[i]||0)+'</span>'+(showPu?'<span class="tp" id="tp'+i+'" title="剩餘道具卡">🎴'+(state.pu[i]||0)+'</span>':'')+'</div>').join("");
 }
 function showTeamAward(){
   const ta=el("teamAward"); if(!ta) return;
-  if(!CFG.teams||CFG.teams.length<2){ ta.innerHTML=""; return; }
+  if(!teamScoreOn()){ ta.innerHTML=""; return; }
   const pts=state.basePts*(state.dbl?2:1);
   ta.innerHTML='<span class="ta-label">答對加分給：</span>'+CFG.teams.map((n,i)=>'<button class="ta-btn" style="--tc:'+teamColor(i)+'" onclick="awardTeam('+i+')">'+escapeHTML(n)+' +'+pts+'</button>').join("")+'<button class="ta-btn skip" onclick="el(\'teamAward\').innerHTML=\'\'">略過</button>';
 }
@@ -1430,7 +1449,7 @@ function awardTeam(i){
   el("teamAward").innerHTML='<span class="ta-done">'+escapeHTML(CFG.teams[i])+' ＋'+pts+' 分 ✓</span>';
 }
 function showRank(){
-  if(!CFG.teams||CFG.teams.length<2){ toast("尚未設定隊伍（設定 → 隊伍）"); return; }
+  if(!teamScoreOn()){ toast("分隊積分目前關閉（設定 → 玩法模式 開啟）"); return; }
   const order=CFG.teams.map((n,i)=>({n,s:state.scores[i]||0,c:teamColor(i)})).sort((a,b)=>b.s-a.s);
   const max=Math.max(1,...order.map(o=>o.s)); const medal=["🥇","🥈","🥉"];
   el("rankBody").innerHTML=order.map((o,r)=>'<div class="rank-row"><span class="rk">'+(medal[r]||(r+1))+'</span><span class="rn">'+escapeHTML(o.n)+'</span><div class="rbar"><div class="rfill" style="width:'+Math.round(o.s/max*100)+'%;background:'+o.c+'"></div></div><span class="rs">'+o.s+'</span></div>').join("");
@@ -1441,7 +1460,7 @@ function renderTeamTab(){
   el("t-team").innerHTML=`
     <div class="card-box">
       <div style="font-weight:900;margin-bottom:6px">隊伍設定（答對加分用）</div>
-      <div class="hint" style="margin-bottom:8px">把學生分成 2～6 隊；答對後老師點哪一隊就加分，右上「🏆 排名」看頒獎。</div>
+      <div class="hint" style="margin-bottom:8px">把學生分成 2～6 隊；答對後老師點哪一隊就加分，右上「🏆 排名」看頒獎。<b>記分／道具功能請到「基本設定 → 🎮 玩法模式」開啟（預設關閉）。</b></div>
       <div class="field"><label>隊伍數量（2～6）</label><input type="number" id="teamN" min="2" max="6" value="${CFG.teams.length}"></div>
       <div class="field"><label>隊名（每行一隊）</label><textarea id="teamTA" style="min-height:150px">${escapeHTML(CFG.teams.join("\n"))}</textarea></div>
       <div class="field" style="max-width:220px"><label>每題基本分</label><input type="number" id="basePts" value="${state.basePts}" step="50"></div>
@@ -1489,6 +1508,17 @@ function renderBasic(){
       <div class="field"><label>副標題說明</label><input type="text" id="setSub" value="${attr(CFG.meta.sub)}"></div>
       <div class="field"><label>活動標籤（首頁小標）</label><input type="text" id="setTag" value="${attr(CFG.meta.tag)}"></div>
     </div>
+    <div class="card-box" style="border-color:var(--moss)">
+      <div style="font-weight:900;margin-bottom:6px">🎮 玩法模式（可隨時開關，預設皆關）</div>
+      <div class="hint" style="margin-bottom:8px">預設是「單純問答＋開獎」模式。需要分組競賽時再打開下面開關；隊名與每題基本分在「隊伍」分頁設定。</div>
+      <div class="row">
+        <div class="field"><label>分隊積分（記分板＋頒獎＋排名）</label><select id="setTeamScore"><option value="0">關閉</option><option value="1">開啟</option></select></div>
+        <div class="field"><label>道具救援卡</label><select id="setPU"><option value="0">關閉</option><option value="1">開啟</option></select></div>
+        <div class="field"><label>每隊道具張數</label><input type="number" id="setPUN" value="${CFG.rules?CFG.rules.powerupsPerTeam:3}" min="0" max="9"></div>
+      </div>
+      <div class="hint">道具效果：50:50 刪兩個錯答 ・ 求救 看提示 ・ 加倍 下次答對分數 ×2 ・ 再抽 換一位學生回答。</div>
+      <button class="btn green" style="margin-top:8px" onclick="applyBasic()">套用玩法模式</button>
+    </div>
     <div class="card-box">
       <div style="font-weight:900;margin-bottom:8px">賓果規則</div>
       <div class="row">
@@ -1504,17 +1534,11 @@ function renderBasic(){
         <div class="field"><label>幾條線算贏（線型圖樣用）</label><input type="number" id="setLines" value="${CFG.board.winLines}" min="1" max="5"></div>
       </div>
       <div class="hint">提示：號碼範圍要 ≥ 卡片格數。例如 5×5 建議 1–25 以上。勝利圖樣會顯示在遊戲畫面上方當作本局目標。</div>
-      <div style="height:10px"></div>
-      <div style="font-weight:900;margin-bottom:6px">🎴 道具救援卡</div>
-      <div class="row">
-        <div class="field"><label>啟用道具</label><select id="setPU"><option value="1">開啟</option><option value="0">關閉</option></select></div>
-        <div class="field"><label>每隊開局張數</label><input type="number" id="setPUN" value="${CFG.rules?CFG.rules.powerupsPerTeam:3}" min="0" max="9"></div>
-      </div>
-      <div class="hint">道具效果：50:50 刪兩個錯答 ・ 求救 看提示 ・ 加倍 下次答對分數 ×2 ・ 再抽 換一位學生回答。每用一個扣該隊一張。</div>
       <button class="btn green" style="margin-top:10px" onclick="applyBasic()">套用基本設定</button>
     </div>`;
   el("setSize").value = String(CFG.board.size);
   if(el("setPattern")) el("setPattern").value = (CFG.board.winPattern||"line3");
+  if(el("setTeamScore")) el("setTeamScore").value = (CFG.rules&&CFG.rules.teamScore)?"1":"0";
   if(el("setPU")) el("setPU").value = (CFG.rules&&CFG.rules.powerups)?"1":"0";
 }
 function applyBasic(){
@@ -1525,7 +1549,8 @@ function applyBasic(){
   CFG.board.winLines=Math.max(1,+el("setLines").value||3);
   CFG.board.winPattern = (el("setPattern")?el("setPattern").value:"line3");
   if(!CFG.rules) CFG.rules={};
-  CFG.rules.powerups = (el("setPU")?el("setPU").value:"1")==="1";
+  CFG.rules.teamScore = (el("setTeamScore")?el("setTeamScore").value:"0")==="1";
+  CFG.rules.powerups = (el("setPU")?el("setPU").value:"0")==="1";
   CFG.rules.powerupsPerTeam = Math.max(0,Math.min(9,+el("setPUN").value||3));
   const cells=CFG.board.size*CFG.board.size;
   if(CFG.board.max-CFG.board.min+1 < cells){ CFG.board.max=CFG.board.min+cells+4; toast("號碼範圍太小，已自動調大"); }
@@ -1744,12 +1769,18 @@ function init(){ initPetals(); const vi=el("valleyIntro"),vg=el("valleyGame"); i
 /* =====================================================================
    12) v1.1 — 道具救援卡 / 勝利圖樣 / 聲音題型
    ===================================================================== */
+/* ---- 玩法模式開關（預設皆關）---- */
+function teamScoreOn(){ return !!(CFG.rules&&CFG.rules.teamScore) && CFG.teams && CFG.teams.length>=2; }
+function puOn(){ return !!(CFG.rules&&CFG.rules.powerups) && CFG.teams && CFG.teams.length>=2; }
+function applyModeUI(){
+  if(el("rankBtn")) el("rankBtn").style.display = teamScoreOn()?"":"none";
+  const v=el("view-game"); if(v){ v.classList.toggle("has-teams",teamScoreOn()); v.classList.toggle("has-pu",puOn()); }
+}
 /* ---- 道具救援卡 ---- */
-function puInit(){ const n=(CFG.rules&&CFG.rules.powerups)?(CFG.rules.powerupsPerTeam||0):0; return (CFG.teams||[]).map(()=>n); }
+function puInit(){ const n=puOn()?(CFG.rules.powerupsPerTeam||0):0; return (CFG.teams||[]).map(()=>n); }
 function renderPuBar(){
   const bar=el("puBar"); if(!bar) return;
-  const on=!!(CFG.rules&&CFG.rules.powerups)&&CFG.teams&&CFG.teams.length>=2;
-  if(!on||state.revealed){ bar.style.display="none"; bar.innerHTML=""; return; }
+  if(!puOn()||state.revealed){ bar.style.display="none"; bar.innerHTML=""; return; }
   bar.style.display="flex";
   const total=(state.pu||[]).reduce((a,b)=>a+(b||0),0);
   const q=curQ(); const optN=(q.options||[]).length;
