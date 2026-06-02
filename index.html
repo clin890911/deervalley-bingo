@@ -1156,7 +1156,6 @@ function applyBg(){ const bp=el("bgPhoto"); if(CFG.photos.bg){ bp.style.backgrou
 function renderGame(){
   el("hudBrand").innerHTML = brandBadge();
   el("hostMascot").innerHTML = mascotSVG("alpaca");
-  el("winLinesTxt").textContent = CFG.board.winLines;
   el("soundBtn").textContent = soundOn?"🔊":"🔈"; el("musicBtn").textContent = musicOn?"🎵":"🔕";
   if(el("zhuyinBtn")) el("zhuyinBtn").classList.toggle("dim",!zhuyinOn);
   state.wheelPool = range(CFG.board.min, CFG.board.max);
@@ -1166,7 +1165,7 @@ function renderGame(){
 }
 /* 從設定回來時：不清空進度，只重新整理畫面 */
 function refreshGame(){
-  el("hostMascot").innerHTML = mascotSVG("alpaca"); el("winLinesTxt").textContent = CFG.board.winLines; el("soundBtn").textContent = soundOn?"🔊":"🔈";
+  el("hostMascot").innerHTML = mascotSVG("alpaca"); el("soundBtn").textContent = soundOn?"🔊":"🔈";
   const total=range(CFG.board.min,CFG.board.max);
   if(state.wheelPool.length+state.called.length!==total.length){ state.called=state.called.filter(x=>total.includes(x)); state.wheelPool=total.filter(x=>!state.called.includes(x)); }
   if(state.qIndex>=CFG.questions.length) state.qIndex=0;
@@ -1852,7 +1851,6 @@ function renderGoalBanner(){
 }
 function updateWinGoal(){
   const p=(CFG.board&&CFG.board.winPattern)||"line3";
-  const t=el("winLinesTxt"); if(t) t.textContent=CFG.board.winLines;
   const wr=document.querySelector(".win-reminder");
   if(wr){ let name=winPatternLabel(p); if(p.indexOf("line")===0) name="任意 "+CFG.board.winLines+" 條線"; wr.innerHTML='集滿 <b>'+name+'</b> 就喊「賓果！」'; }
 }
